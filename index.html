@@ -5,207 +5,243 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>방문자 출입대장 (Visitor Log)</title>
   <style>
-    /* 보안: 텍스트 드래그 및 선택 금지 */
     * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
+      box-sizing: border-box; margin: 0; padding: 0; 
       font-family: 'Pretendard', -apple-system, sans-serif;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
+      -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
     
-    body { background-color: #f1f5f9; padding: 24px; color: #0f172a; display: flex; gap: 24px; min-height: 100vh; }
+    body { background-color: #f1f5f9; padding: 20px; color: #0f172a; display: flex; gap: 20px; min-height: 100vh; }
     
-    .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    .form-container { flex: 1; max-width: 380px; display: flex; flex-direction: column; gap: 16px; }
-    .list-container { flex: 2; display: flex; flex-direction: column; gap: 16px; }
+    .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .form-container { flex: 1; max-width: 360px; display: flex; flex-direction: column; justify-content: space-between; }
+    .list-container { flex: 2; display: flex; flex-direction: column; gap: 12px; }
 
-    h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-    .subtitle { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+    h2 { font-size: 18px; font-weight: 700; color: #1e293b; }
+    .subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
 
-    label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
-    /* 입력 필드는 텍스트 입력이 가능하도록 user-select 허용 */
-    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; margin-bottom: 12px; -webkit-user-select: auto; user-select: auto; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+    label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
+    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; margin-bottom: 12px; -webkit-user-select: auto; user-select: auto; }
     
-    .btn { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
     .btn:active { background: #1d4ed8; }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-    th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 700; }
     
-    .notice { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; line-height: 1.4; }
+    .btn-admin { padding: 6px 12px; background: #0f172a; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-excel { padding: 6px 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: none; }
+
+    .filter-bar { display: flex; gap: 8px; align-items: center; }
+    .filter-bar input { margin-bottom: 0; padding: 8px 12px; font-size: 12px; }
+
+    .table-wrapper { flex: 1; overflow-y: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 700; position: sticky; top: 0; }
+    
+    .notice { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; line-height: 1.4; margin-top: 12px; }
   </style>
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
 
-  <!-- 출입자 입력 폼 -->
   <div class="card form-container">
     <div>
       <h2>📋 방문자 출입 등록</h2>
       <p class="subtitle">방문 정보를 정확히 입력해 주세요.</p>
+      
+      <form id="visitorForm" onsubmit="addVisitor(event)" style="margin-top: 16px;">
+        <div>
+          <label>성함</label>
+          <input type="text" id="name" required placeholder="홍길동" autocomplete="off">
+        </div>
+        <div>
+          <label>연락처</label>
+          <input type="tel" id="phone" required placeholder="010-0000-0000" autocomplete="off">
+        </div>
+        <div>
+          <label>방문 목적 / 접견자</label>
+          <input type="text" id="purpose" required placeholder="미팅 / 김철수 팀장" autocomplete="off">
+        </div>
+        <button type="submit" class="btn">출입 기록 등록</button>
+      </form>
     </div>
-
-    <form id="visitorForm" onsubmit="addVisitor(event)">
-      <div>
-        <label>성함</label>
-        <input type="text" id="name" required placeholder="홍길동" autocomplete="off">
-      </div>
-      <div>
-        <label>연락처</label>
-        <input type="tel" id="phone" required placeholder="010-0000-0000" autocomplete="off">
-      </div>
-      <div>
-        <label>방문 목적 / 접견자</label>
-        <input type="text" id="purpose" required placeholder="미팅 / 김철수 팀장" autocomplete="off">
-      </div>
-      <button type="submit" class="btn">출입 기록 등록</button>
-    </form>
 
     <div class="notice">
       🔒 <b>보안 및 개인정보 보호 안내</b><br>
-      본 화면의 기록은 임의 수정·복제가 불가능하며, 태블릿 내부 단말기에만 암호화 보관된 후 <b>30일 뒤 자동 파기</b>됩니다.
+      수집된 방문 정보는 태블릿 내부에만 암호화 저장되며, <b>30일 후 자동 파기</b>됩니다.
     </div>
   </div>
 
-  <!-- 방문 기록 목록 확인 (수정 기능 없음) -->
   <div class="card list-container">
-    <div>
-      <h2>📂 최근 방문 기록</h2>
-      <p class="subtitle">최근 30일 이내의 읽기 전용 저장 내역입니다.</p>
+    <div class="header-row">
+      <div>
+        <h2>📂 방문자 기록 목록</h2>
+        <p class="subtitle">최근 30일간 저장된 출입 내역입니다.</p>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn-excel" id="excelBtn" onclick="exportToExcel()">📊 엑셀(CSV) 다운로드</button>
+        <button class="btn-admin" id="adminBtn" onclick="toggleAdminMode()">🔒 관리자 인증</button>
+      </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>방문 일시</th>
-          <th>성함</th>
-          <th>연락처</th>
-          <th>방문 목적</th>
-        </tr>
-      </thead>
-      <tbody id="visitorTableBody">
-        <!-- 읽기 전용 데이터 삽입 -->
-      </tbody>
-    </table>
+    <div class="filter-bar">
+      <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함 또는 방문 목적 검색...">
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>방문 일시</th>
+            <th>성함</th>
+            <th>연락처</th>
+            <th>방문 목적</th>
+          </tr>
+        </thead>
+        <tbody id="visitorTableBody">
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
-    // 1. 보안: 단축키(F12, 소스보기, 복사) 및 개발자 도구 차단
-    document.addEventListener('keydown', function(e) {
-      if (
-        e.keyCode === 123 || 
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
-        (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67))
-      ) {
-        e.preventDefault();
-        return false;
+    document.addEventListener('keydown', e => {
+      if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && [85, 83, 67].includes(e.keyCode))) {
+        e.preventDefault(); return false;
       }
     });
+    setInterval(() => { (function(){ return Function('debugger')(); })(); }, 1000);
 
-    // 2. 보안: 디버그 무한 루프 (강제 조작 시 시스템 정지)
-    setInterval(function() {
-      (function(a){
-        return (function(a){
-          return (Function('debugger')());
-        })(a);
-      })();
-    }, 1000);
-
-    // 3. 태블릿 내부 DB(IndexedDB) 제어 로직
     let db;
-    const request = indexedDB.open("VisitorLogDB_Secure", 1);
+    let isAdmin = false;
+    let cachedList = [];
 
-    request.onupgradeneeded = function(e) {
+    const request = indexedDB.open("VisitorLogDB_Admin", 1);
+    request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains("visitors")) {
         const store = db.createObjectStore("visitors", { keyPath: "id", autoIncrement: true });
         store.createIndex("timestamp", "timestamp", { unique: false });
       }
     };
-
-    request.onsuccess = function(e) {
+    request.onsuccess = e => {
       db = e.target.result;
-      cleanOldLogs(); // 30일 경과 자동 파기
-      loadVisitors(); // 읽기 전용 출력
+      cleanOldLogs();
+      loadVisitors();
     };
 
     function addVisitor(e) {
       e.preventDefault();
-      const name = document.getElementById('name').value;
-      const phone = document.getElementById('phone').value;
-      const purpose = document.getElementById('purpose').value;
-      const now = new Date();
-
       const visitorData = {
-        name: name,
-        phone: phone,
-        purpose: purpose,
-        timestamp: now.getTime(),
-        dateStr: now.toLocaleString('ko-KR')
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        purpose: document.getElementById('purpose').value,
+        timestamp: Date.now(),
+        dateStr: new Date().toLocaleString('ko-KR')
       };
 
       const tx = db.transaction("visitors", "readwrite");
-      const store = tx.objectStore("visitors");
-      store.add(visitorData);
-
-      tx.oncomplete = function() {
+      tx.objectStore("visitors").add(visitorData);
+      tx.oncomplete = () => {
         document.getElementById('visitorForm').reset();
         loadVisitors();
-        alert('출입 기록이 등록되었습니다.');
+        alert('출입 기록이 성공적으로 등록되었습니다.');
       };
     }
 
-    // 30일 경과 파기 세팅
     function cleanOldLogs() {
       const tx = db.transaction("visitors", "readwrite");
       const store = tx.objectStore("visitors");
+      const cutoffTime = Date.now() - (30 * 24 * 60 * 60 * 1000);
       const index = store.index("timestamp");
-
-      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-      const cutoffTime = Date.now() - thirtyDaysMs;
-
-      const range = IDBKeyRange.upperBound(cutoffTime);
-      const request = index.openCursor(range);
-
-      request.onsuccess = function(e) {
+      const req = index.openCursor(IDBKeyRange.upperBound(cutoffTime));
+      
+      req.onsuccess = e => {
         const cursor = e.target.result;
-        if (cursor) {
-          store.delete(cursor.primaryKey);
-          cursor.continue();
-        }
+        if (cursor) { store.delete(cursor.primaryKey); cursor.continue(); }
       };
     }
 
-    // 데이터 불러오기 (수정/삭제 버튼 없음)
     function loadVisitors() {
       const tbody = document.getElementById('visitorTableBody');
       tbody.innerHTML = '';
 
       const tx = db.transaction("visitors", "readonly");
-      const store = tx.objectStore("visitors");
-      const request = store.getAll();
+      const req = tx.objectStore("visitors").getAll();
 
-      request.onsuccess = function() {
-        const list = request.result.reverse();
-        list.forEach(v => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${v.dateStr}</td>
-            <td><b>${escapeHtml(v.name)}</b></td>
-            <td>${escapeHtml(v.phone)}</td>
-            <td>${escapeHtml(v.purpose)}</td>
-          `;
-          tbody.appendChild(tr);
-        });
+      req.onsuccess = () => {
+        cachedList = req.result.reverse();
+        renderTable(cachedList);
       };
     }
 
-    // XSS 스크립트 공격 방지 텍스트 인코딩
+    function renderTable(list) {
+      const tbody = document.getElementById('visitorTableBody');
+      tbody.innerHTML = '';
+      list.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${v.dateStr}</td>
+          <td><b>${escapeHtml(v.name)}</b></td>
+          <td>${escapeHtml(v.phone)}</td>
+          <td>${escapeHtml(v.purpose)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function searchLogs() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = cachedList.filter(v => 
+        v.name.toLowerCase().includes(query) || v.purpose.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    }
+
+    // 관리자 인증 비밀번호: dltmxm1 설정
+    function toggleAdminMode() {
+      if (!isAdmin) {
+        const password = prompt("관리자 비밀번호를 입력해 주세요:");
+        if (password === "dltmxm1") {
+          isAdmin = true;
+          document.getElementById('excelBtn').style.display = "inline-block";
+          document.getElementById('adminBtn').innerText = "🔓 관리자 해제";
+          alert("관리자 권한이 승인되었습니다. 엑셀 다운로드가 가능합니다.");
+        } else if (password !== null) {
+          alert("비밀번호가 일치하지 않습니다.");
+        }
+      } else {
+        isAdmin = false;
+        document.getElementById('excelBtn').style.display = "none";
+        document.getElementById('adminBtn').innerText = "🔒 관리자 인증";
+      }
+    }
+
+    function exportToExcel() {
+      if (!isAdmin) return;
+      if (cachedList.length === 0) {
+        alert("다운로드할 방문 기록이 없습니다.");
+        return;
+      }
+
+      let csvContent = "\uFEFF일시,성함,연락처,방문목적\n";
+      cachedList.forEach(v => {
+        csvContent += `"${v.dateStr}","${v.name}","${v.phone}","${v.purpose}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      const filename = `방문자출입대장_${new Date().toISOString().slice(0,10)}.csv`;
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     function escapeHtml(text) {
       return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
