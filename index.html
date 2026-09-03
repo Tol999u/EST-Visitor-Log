@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>방문자 출입대장 (Visitor Log)</title>
+  <title>EST빌딩 방문자 출입대장</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     /* 우클릭, 드래그 및 선택 금지 */
@@ -26,32 +26,32 @@
       position: relative; 
     }
     
-    /* 태블릿 화면 단일 카드 레이아웃 (방문 기록 목록 완전히 제거됨) */
+    /* 태블릿 화면 단일 카드 레이아웃 */
     .card { 
       background: white; 
       border-radius: 20px; 
-      padding: 36px; 
+      padding: 32px; 
       box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
       width: 100%;
       max-width: 480px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
 
-    h2 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
-    .subtitle { font-size: 13px; color: #64748b; text-align: center; }
+    h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
+    .subtitle { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 8px; }
 
-    label { font-size: 14px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px; }
+    label { font-size: 13px; font-weight: 700; color: #334155; display: block; margin-bottom: 4px; }
     
     /* 입력 필드 및 드롭다운 스타일 */
     input, select { 
       width: 100%; 
-      padding: 14px 16px; 
+      padding: 12px 14px; 
       border: 1px solid #cbd5e1; 
       border-radius: 10px; 
       font-size: 15px; 
-      margin-bottom: 14px; 
+      margin-bottom: 12px; 
       background: #f8fafc;
       color: #0f172a;
       -webkit-user-select: auto; 
@@ -69,12 +69,12 @@
       font-size: 16px; 
       font-weight: 700; 
       cursor: pointer; 
-      margin-top: 6px;
+      margin-top: 4px;
     }
     .btn:active { background: #1d4ed8; transform: scale(0.99); }
 
     .notice { 
-      font-size: 12px; 
+      font-size: 11px; 
       color: #ef4444; 
       background: #fef2f2; 
       padding: 12px; 
@@ -83,24 +83,23 @@
       text-align: center;
     }
 
-    /* 피플센터 피플시너지팀 푸터 */
+    /* 피플센터 피플시너지팀 단독 푸터 */
     .footer-info {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
       background-color: #ffffff;
-      padding: 10px 12px;
+      padding: 12px;
       font-size: 11px;
-      color: #94a3b8;
+      color: #64748b;
+      font-weight: 600;
       text-align: center;
-      line-height: 1.5;
-      word-break: keep-all;
+      line-height: 1.4;
       border-top: 1px solid #e2e8f0;
       z-index: 1000;
       box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
     }
-    .footer-info div { white-space: nowrap; }
 
     /* 우측 최하단 플로팅 관리자 진입 버튼 */
     .btn-admin-corner {
@@ -119,7 +118,7 @@
     }
     .btn-admin-corner:hover { opacity: 1; color: #475569; }
 
-    /* 관리자 전용 전체화면 모달 (비밀번호 dltmxm1 입력 시에만 호출) */
+    /* 관리자 전용 전체화면 모달 */
     .admin-modal {
       display: none;
       position: fixed;
@@ -134,7 +133,7 @@
     .admin-modal-content {
       background: white;
       width: 100%;
-      max-width: 750px;
+      max-width: 800px;
       height: 80vh;
       border-radius: 20px;
       padding: 24px;
@@ -157,10 +156,10 @@
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
 
-  <!-- 방문자 전용 출입 등록 폼 (타인 기록 전면 숨김) -->
+  <!-- 방문자 전용 출입 등록 폼 -->
   <div class="card">
     <div>
-      <h2>📋 방문자 출입 등록</h2>
+      <h2>📋 EST빌딩 방문자 출입 등록</h2>
       <p class="subtitle">방문 정보를 정확히 입력해 주세요.</p>
     </div>
 
@@ -170,12 +169,15 @@
         <input type="text" id="name" required placeholder="성함을 입력해 주세요" autocomplete="off">
       </div>
       <div>
+        <label>소속 (회사 / 기관명)</label>
+        <input type="text" id="company" placeholder="소속 회사명 또는 기관명을 입력해 주세요" autocomplete="off">
+      </div>
+      <div>
         <label>연락처</label>
         <input type="tel" id="phone" required placeholder="010-0000-0000" autocomplete="off">
       </div>
       <div>
         <label>방문 목적</label>
-        <!-- 복구된 방문 목적 드롭다운 -->
         <select id="purpose" required>
           <option value="" disabled selected>방문 목적을 선택해 주세요</option>
           <option value="업무 미팅">업무 미팅</option>
@@ -198,16 +200,15 @@
     </div>
   </div>
 
-  <!-- 푸터 문의처 수정 (by tol9u 삭제 완료) -->
+  <!-- 푸터 문의처 (아랫줄 삭제 반영) -->
   <footer class="footer-info">
     <div>문의 : 피플센터 피플시너지팀</div>
-    <div>Copyright © 피플센터. All rights reserved.</div>
   </footer>
 
   <!-- 우측 최하단 귀퉁이 관리자 진입 버튼 -->
   <button class="btn-admin-corner" onclick="openAdminModal()" title="관리자">⚙️</button>
 
-  <!-- 관리자 전용 팝업 모달 (dltmxm1 입력시에만 팝업) -->
+  <!-- 관리자 전용 팝업 모달 -->
   <div class="admin-modal" id="adminModal">
     <div class="admin-modal-content">
       <div class="admin-header">
@@ -223,7 +224,7 @@
 
       <!-- 관리자 모드용 검색 필터 -->
       <div class="filter-bar">
-        <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함, 방문 목적, 접견자 검색...">
+        <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함, 소속, 방문 목적, 접견자 검색...">
       </div>
 
       <div class="table-wrapper">
@@ -232,6 +233,7 @@
             <tr>
               <th>방문 일시</th>
               <th>성함</th>
+              <th>소속</th>
               <th>연락처</th>
               <th>방문 목적</th>
               <th>접견자</th>
@@ -257,7 +259,7 @@
     let cachedList = [];
 
     // IndexedDB 로컬 DB 생성
-    const request = indexedDB.open("VisitorLogDB_V3", 1);
+    const request = indexedDB.open("EST_VisitorLogDB_V4", 1);
     request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains("visitors")) {
@@ -275,6 +277,7 @@
       e.preventDefault();
       const visitorData = {
         name: document.getElementById('name').value,
+        company: document.getElementById('company').value || '-',
         phone: document.getElementById('phone').value,
         purpose: document.getElementById('purpose').value,
         host: document.getElementById('host').value,
@@ -338,6 +341,7 @@
         tr.innerHTML = `
           <td>${v.dateStr}</td>
           <td><b>${escapeHtml(v.name)}</b></td>
+          <td>${escapeHtml(v.company || '-')}</td>
           <td>${escapeHtml(v.phone)}</td>
           <td>${escapeHtml(v.purpose)}</td>
           <td>${escapeHtml(v.host || '-')}</td>
@@ -350,6 +354,7 @@
       const query = document.getElementById('searchInput').value.toLowerCase();
       const filtered = cachedList.filter(v => 
         v.name.toLowerCase().includes(query) || 
+        (v.company && v.company.toLowerCase().includes(query)) ||
         v.purpose.toLowerCase().includes(query) ||
         (v.host && v.host.toLowerCase().includes(query))
       );
@@ -363,16 +368,16 @@
         return;
       }
 
-      let csvContent = "\uFEFF일시,성함,연락처,방문목적,접견자\n";
+      let csvContent = "\uFEFF일시,성함,소속,연락처,방문목적,접견자\n";
       cachedList.forEach(v => {
-        csvContent += `"${v.dateStr}","${v.name}","${v.phone}","${v.purpose}","${v.host || ''}"\n`;
+        csvContent += `"${v.dateStr}","${v.name}","${v.company || '-'}","${v.phone}","${v.purpose}","${v.host || ''}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       
-      const filename = `방문자출입대장_${new Date().toISOString().slice(0,10)}.csv`;
+      const filename = `EST빌딩_방문자출입대장_${new Date().toISOString().slice(0,10)}.csv`;
       link.setAttribute("href", url);
       link.setAttribute("download", filename);
       document.body.appendChild(link);
