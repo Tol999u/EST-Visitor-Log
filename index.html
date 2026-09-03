@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방문자 출입 대장</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', 'Noto Sans KR', sans-serif; }
+        body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: #ffffff; width: 100%; max-width: 600px; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); position: relative; }
+        h2 { text-align: center; color: #1a202c; margin-bottom: 8px; font-size: 26px; }
+        .subtitle { text-align: center; color: #718096; font-size: 14px; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #2d3748; font-size: 15px; }
+        input, select { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 16px; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,0.15); }
+        
+        /* 개인정보 동의 박스 */
+        .privacy-box { background: #edf2f7; padding: 12px 15px; border-radius: 8px; font-size: 12px; color: #4a5568; line-height: 1.5; margin-bottom: 20px; }
+        .privacy-box strong { color: #2b6cb0; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #2d3748; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+        
+        /* 버튼 */
+        .btn-submit { width: 100%; padding: 15px; background-color: #3182ce; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }
+        .btn-submit:hover { background-color: #2b6cb0; }
+        
+        /* 완료 메시지 레이어 */
+        .success-overlay { display: none; text-align: center; padding: 40px 20px; }
+        .success-icon { font-size: 50px; color: #38a169; margin-bottom: 15px; }
+        .success-title { font-size: 22px; font-weight: bold; color: #2d3748; margin-bottom: 10px; }
+        .success-desc { color: #718096; font-size: 15px; }
+
+        /* 최하단 문의처 스타일 */
+        .footer-contact { text-align: center; font-size: 13px; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 15px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 입력 폼 -->
+    <div id="formContainer">
+        <h2>방문자 출입 등록</h2>
+        <p class="subtitle">원활한 오피스 보안 관리를 위해 방문 정보를 입력해 주세요.</p>
+        
+        <form id="visitorForm">
+            <div class="form-group">
+                <label for="visitorName">방문자 성명 *</label>
+                <input type="text" id="visitorName" placeholder="홍길동" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="company">소속 (회사/기관명) *</label>
+                <input type="text" id="company" placeholder="주식회사 OOO" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">연락처 *</label>
+                <input type="tel" id="phone" placeholder="010-0000-0000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="purpose">방문 목적 *</label>
+                <select id="purpose" required>
+                    <option value="">선택해 주세요</option>
+                    <option value="미팅/회의">미팅 / 회의</option>
+                    <option value="인터뷰/면접">인터뷰 / 면접</option>
+                    <option value="납품/택배/정비">납품 / 택배 / 시설 정비</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="targetPerson">접견/담당 직원명</label>
+                <input type="text" id="targetPerson" placeholder="OOO 팀장">
+            </div>
+
+            <!-- 개인정보 수집 동의 안내 (법적 필수) -->
+            <div class="privacy-box">
+                <strong>[개인정보 수집·이용 동의]</strong><br>
+                1. 수집목적: 오피스 출입관리 및 보안유지<br>
+                2. 수집항목: 성명, 소속, 연락처, 방문목적, 접견인<br>
+                3. 보유기간: <strong>방문일로부터 30일 보관 후 자동 파기</strong><br>
+                * 귀하는 동의를 거부할 권리가 있으나, 미동의 시 사옥 출입이 제한될 수 있습니다.
+                
+                <label class="checkbox-group">
+                    <input type="checkbox" id="privacyAgree" required>
+                    <span>개인정보 수집 및 이용에 동의합니다. (필수)</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn-submit">방문 등록 완료</button>
+        </form>
+    </div>
+
+    <!-- 완료 화면 (이전 방문자 정보 노출 완전 차단) -->
+    <div id="successOverlay" class="success-overlay">
+        <div class="success-icon">✓</div>
+        <div class="success-title">방문 등록이 완료되었습니다</div>
+        <p class="success-desc">인포데스크 또는 대기 장소에서 잠시만 기다려 주세요.<br><br><small>(3초 후 초기 화면으로 이동합니다)</small></p>
+    </div>
+
+    <!-- 최하단 문의처 추가 -->
+    <div class="footer-contact">
+        문의: 피플센터 피플시너지팀
+    </div>
+</div>
+
+<script>
+    document.getElementById('visitorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 1. 입력 데이터 수집
+        const now = new Date();
+        const visitorData = {
+            id: Date.now(),
+            date: now.toLocaleDateString('ko-KR'),
+            time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+            name: document.getElementById('visitorName').value,
+            company: document.getElementById('company').value,
+            phone: document.getElementById('phone').value,
+            purpose: document.getElementById('purpose').value,
+            targetPerson: document.getElementById('targetPerson').value || '-'
+        };
+
+        // 2. 브라우저 내 저장 (로컬스토리지 DB)
+        let visitorLogs = JSON.parse(localStorage.getItem('visitorLogs') || '[]');
+        
+        // 3. 30일 경과한 데이터 자동 파기 로직 (법적 기한 준수)
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+        visitorLogs = visitorLogs.filter(log => (Date.now() - log.id) < THIRTY_DAYS_MS);
+        
+        // 신규 데이터 추가
+        visitorLogs.push(visitorData);
+        localStorage.setItem('visitorLogs', JSON.stringify(visitorLogs));
+
+        // 4. 화면 전환 (개인정보 보호를 위해 입력 정보 즉시 숨김)
+        document.getElementById('formContainer').style.display = 'none';
+        document.getElementById('successOverlay').style.display = 'block';
+
+        // 5. 3초 후 다음 방문자를 위해 폼 리셋 및 메인 화면 복귀
+        setTimeout(function() {
+            document.getElementById('visitorForm').reset();
+            document.getElementById('successOverlay').style.display = 'none';
+            document.getElementById('formContainer').style.display = 'block';
+        }, 3000);
+    });
+</script>
+
+</body>
+</html>
