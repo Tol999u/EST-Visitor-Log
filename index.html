@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>방문자 출입대장 (Visitor Log)</title>
   <style>
+    /* 우클릭 및 텍스트 드래그 방지 */
     * { 
-      box-sizing: border-box; margin: 0; padding: 0; 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
       font-family: 'Pretendard', -apple-system, sans-serif;
-      -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
     
@@ -16,68 +22,51 @@
       background-color: #f1f5f9; 
       color: #0f172a; 
       display: flex; 
-      justify-content: center; 
-      align-items: center; 
+      gap: 24px; 
       min-height: 100vh; 
-      padding: 20px;
+      padding: 24px 24px 95px 24px; 
       position: relative; 
     }
     
-    /* 태블릿 중앙 단일 카드 레이아웃 */
-    .card { 
-      background: white; 
-      border-radius: 20px; 
-      padding: 36px; 
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+    .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .form-container { flex: 1; max-width: 380px; display: flex; flex-direction: column; gap: 16px; }
+    .list-container { flex: 2; display: flex; flex-direction: column; gap: 16px; }
 
-    h2 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
-    .subtitle { font-size: 13px; color: #64748b; text-align: center; }
+    h2 { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: #64748b; margin-bottom: 12px; }
 
-    label { font-size: 14px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px; }
-    input { 
-      width: 100%; 
-      padding: 14px 16px; 
-      border: 1px solid #cbd5e1; 
-      border-radius: 10px; 
-      font-size: 16px; 
-      margin-bottom: 16px; 
-      background: #f8fafc;
-      -webkit-user-select: auto; 
-      user-select: auto; 
-    }
-    input:focus { outline: none; border-color: #2563eb; background: white; }
+    label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
+    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; margin-bottom: 12px; -webkit-user-select: auto; user-select: auto; }
     
-    .btn { 
-      width: 100%; 
-      padding: 16px; 
-      background: #2563eb; 
-      color: white; 
-      border: none; 
-      border-radius: 10px; 
-      font-size: 17px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      margin-top: 8px;
-    }
-    .btn:active { background: #1d4ed8; transform: scale(0.99); }
+    .btn { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .btn:active { background: #1d4ed8; }
 
-    .notice { 
-      font-size: 12px; 
-      color: #ef4444; 
-      background: #fef2f2; 
-      padding: 12px; 
-      border-radius: 8px; 
-      line-height: 1.5; 
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 700; }
+    
+    .notice { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; line-height: 1.4; }
+
+    /* 고정 최하단 푸터 디자인 */
+    .footer-info {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #ffffff;
+      padding: 10px 12px;
+      font-size: 10px;
+      color: #94a3b8;
       text-align: center;
+      line-height: 1.5;
+      word-break: keep-all;
+      border-top: 1px solid #e2e8f0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
     }
+    .footer-info div { white-space: nowrap; }
 
-    /* 우측 하단 귀퉁이 작은 관리자 버튼 */
+    /* 우측 최하단 귀퉁이 작은 관리자 버튼 */
     .btn-admin-corner {
       position: fixed;
       bottom: 12px;
@@ -85,15 +74,16 @@
       background: transparent;
       color: #cbd5e1;
       border: none;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
-      padding: 8px;
-      opacity: 0.5;
+      padding: 6px;
+      opacity: 0.4;
+      z-index: 1001;
       transition: opacity 0.2s;
     }
     .btn-admin-corner:hover { opacity: 1; }
 
-    /* 관리자 전용 전체화면 모달 (평상시 완전히 숨김) */
+    /* 관리자 전용 엑셀 추출 모달 (팝업) */
     .admin-modal {
       display: none;
       position: fixed;
@@ -108,9 +98,8 @@
     .admin-modal-content {
       background: white;
       width: 100%;
-      max-width: 800px;
-      height: 85vh;
-      border-radius: 20px;
+      max-width: 500px;
+      border-radius: 16px;
       padding: 24px;
       display: flex;
       flex-direction: column;
@@ -118,19 +107,14 @@
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
     }
     .admin-header { display: flex; justify-content: space-between; align-items: center; }
-    .btn-excel { padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
-    .btn-close { padding: 10px 16px; background: #64748b; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
-    
-    .table-wrapper { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-    th { background: #f8fafc; color: #64748b; position: sticky; top: 0; font-weight: 700; }
+    .btn-excel { padding: 12px 18px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn-close { padding: 8px 14px; background: #64748b; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   </style>
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
 
-  <!-- 방문자 전용 화면 (입력 폼만 깔끔하게 구성) -->
-  <div class="card">
+  <!-- 좌측: 출입자 입력 폼 -->
+  <div class="card form-container">
     <div>
       <h2>📋 방문자 출입 등록</h2>
       <p class="subtitle">방문 정보를 정확히 입력해 주세요.</p>
@@ -139,7 +123,7 @@
     <form id="visitorForm" onsubmit="addVisitor(event)">
       <div>
         <label>성함</label>
-        <input type="text" id="name" required placeholder="성함을 입력하세요" autocomplete="off">
+        <input type="text" id="name" required placeholder="홍길동" autocomplete="off">
       </div>
       <div>
         <label>연락처</label>
@@ -147,63 +131,75 @@
       </div>
       <div>
         <label>방문 목적 / 접견자</label>
-        <input type="text" id="purpose" required placeholder="예: 미팅 / 김철수 팀장" autocomplete="off">
+        <input type="text" id="purpose" required placeholder="미팅 / 김철수 팀장" autocomplete="off">
       </div>
       <button type="submit" class="btn">출입 기록 등록</button>
     </form>
 
     <div class="notice">
-      🔒 수집된 방문 정보는 태블릿 내부에 안전하게 보관되며,<br><b>30일 후 자동으로 영구 파기</b>됩니다.
+      🔒 <b>보안 및 개인정보 보호 안내</b><br>
+      본 화면의 기록은 임의 수정·복제가 불가능하며, 태블릿 내부 단말기에만 암호화 보관된 후 <b>30일 뒤 자동 파기</b>됩니다.
     </div>
   </div>
 
-  <!-- 우측 최하단 귀퉁이 아이콘 버튼 -->
+  <!-- 우측: 최근 방문 기록 실시간 목록 확인 (읽기 전용) -->
+  <div class="card list-container">
+    <div>
+      <h2>📂 최근 방문 기록</h2>
+      <p class="subtitle">최근 30일 이내의 읽기 전용 저장 내역입니다.</p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>방문 일시</th>
+          <th>성함</th>
+          <th>연락처</th>
+          <th>방문 목적</th>
+        </tr>
+      </thead>
+      <tbody id="visitorTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 최하단 저작권 및 문의 안내 푸터 -->
+  <footer class="footer-info">
+    <div>by Tol9u | 문의: dotol9u@gmail.com</div>
+    <div>Copyright © 2026 Tol9u. All rights reserved.</div>
+    <div>무단 복제·전재·배포 및 상업적 이용을 금합니다.</div>
+  </footer>
+
+  <!-- 우측 최하단 관리자 진입 아이콘 버튼 -->
   <button class="btn-admin-corner" onclick="openAdminModal()" title="관리자">⚙️</button>
 
-  <!-- 관리자 전용 데이터 조회 & 엑셀 모달 팝업 -->
+  <!-- 관리자 전용 엑셀 추출 모달 -->
   <div class="admin-modal" id="adminModal">
     <div class="admin-modal-content">
       <div class="admin-header">
-        <div>
-          <h2>📂 방문자 기록 관리</h2>
-          <p class="subtitle">최근 30일간 내장 DB에 저장된 읽기 전용 출입 내역입니다.</p>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn-excel" onclick="exportToExcel()">📊 엑셀(CSV) 다운로드</button>
-          <button class="btn-close" onclick="closeAdminModal()">닫기</button>
-        </div>
+        <h2>🔒 관리자 기능</h2>
+        <button class="btn-close" onclick="closeAdminModal()">닫기</button>
       </div>
-
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>방문 일시</th>
-              <th>성함</th>
-              <th>연락처</th>
-              <th>방문 목적</th>
-            </tr>
-          </thead>
-          <tbody id="visitorTableBody">
-          </tbody>
-        </table>
-      </div>
+      <p style="font-size: 13px; color: #64748b;">태블릿 내부에 저장된 방문 기록 데이터를 엑셀(CSV) 파일로 다운로드합니다.</p>
+      <button class="btn-excel" onclick="exportToExcel()">📊 엑셀(CSV) 데이터 다운로드</button>
     </div>
   </div>
 
   <script>
-    // 보안 (우클릭, 단축키, 디버거 차단)
+    // 보안: 단축키, 개발자 도구, 소스보기 차단
     document.addEventListener('keydown', e => {
       if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && [85, 83, 67].includes(e.keyCode))) {
         e.preventDefault(); return false;
       }
     });
+    // 보안: 디버그 루프
     setInterval(() => { (function(){ return Function('debugger')(); })(); }, 1000);
 
     let db;
     let cachedList = [];
 
-    const request = indexedDB.open("VisitorLogDB_Single", 1);
+    // IndexedDB 태블릿 내부 저장소
+    const request = indexedDB.open("VisitorLogDB_Final", 1);
     request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains("visitors")) {
@@ -214,6 +210,7 @@
     request.onsuccess = e => {
       db = e.target.result;
       cleanOldLogs();
+      loadVisitors();
     };
 
     function addVisitor(e) {
@@ -230,10 +227,12 @@
       tx.objectStore("visitors").add(visitorData);
       tx.oncomplete = () => {
         document.getElementById('visitorForm').reset();
-        alert('출입 기록이 성공적으로 등록되었습니다.');
+        loadVisitors();
+        alert('출입 기록이 등록되었습니다.');
       };
     }
 
+    // 30일 경과 데이터 자동 파기
     function cleanOldLogs() {
       const tx = db.transaction("visitors", "readwrite");
       const store = tx.objectStore("visitors");
@@ -247,21 +246,7 @@
       };
     }
 
-    // 귀퉁이 버튼 클릭 시 관리자 인증
-    function openAdminModal() {
-      const password = prompt("관리자 비밀번호를 입력하세요:");
-      if (password === "dltmxm1") {
-        loadVisitors();
-        document.getElementById('adminModal').style.display = "flex";
-      } else if (password !== null) {
-        alert("비밀번호가 일치하지 않습니다.");
-      }
-    }
-
-    function closeAdminModal() {
-      document.getElementById('adminModal').style.display = "none";
-    }
-
+    // 목록 불러오기
     function loadVisitors() {
       const tbody = document.getElementById('visitorTableBody');
       tbody.innerHTML = '';
@@ -284,6 +269,21 @@
       };
     }
 
+    // 관리자 모드 인증 (비밀번호: dltmxm1)
+    function openAdminModal() {
+      const password = prompt("관리자 비밀번호를 입력하세요:");
+      if (password === "dltmxm1") {
+        document.getElementById('adminModal').style.display = "flex";
+      } else if (password !== null) {
+        alert("비밀번호가 일치하지 않습니다.");
+      }
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').style.display = "none";
+    }
+
+    // 엑셀(CSV) 추출
     function exportToExcel() {
       if (cachedList.length === 0) {
         alert("다운로드할 방문 기록이 없습니다.");
