@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>방문자 출입대장 (Visitor Log)</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
-    /* 텍스트 드래그 및 우클릭 방지 */
+    /* 우클릭, 드래그 및 선택 금지 */
     * { 
       box-sizing: border-box; margin: 0; padding: 0; 
       font-family: 'Pretendard', -apple-system, sans-serif;
@@ -25,24 +26,26 @@
       position: relative; 
     }
     
-    /* 중앙 방문자 등록 단일 카드 */
+    /* 태블릿 화면 단일 카드 레이아웃 (방문 기록 목록 완전히 제거됨) */
     .card { 
       background: white; 
       border-radius: 20px; 
-      padding: 32px; 
+      padding: 36px; 
       box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
       width: 100%;
-      max-width: 440px;
+      max-width: 480px;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
+    h2 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
     .subtitle { font-size: 13px; color: #64748b; text-align: center; }
 
-    label { font-size: 13px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px; }
-    input { 
+    label { font-size: 14px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px; }
+    
+    /* 입력 필드 및 드롭다운 스타일 */
+    input, select { 
       width: 100%; 
       padding: 14px 16px; 
       border: 1px solid #cbd5e1; 
@@ -50,10 +53,11 @@
       font-size: 15px; 
       margin-bottom: 14px; 
       background: #f8fafc;
+      color: #0f172a;
       -webkit-user-select: auto; 
       user-select: auto; 
     }
-    input:focus { outline: none; border-color: #2563eb; background: white; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; background: white; }
     
     .btn { 
       width: 100%; 
@@ -70,7 +74,7 @@
     .btn:active { background: #1d4ed8; transform: scale(0.99); }
 
     .notice { 
-      font-size: 11px; 
+      font-size: 12px; 
       color: #ef4444; 
       background: #fef2f2; 
       padding: 12px; 
@@ -79,7 +83,7 @@
       text-align: center;
     }
 
-    /* 하단 정돈 푸터 */
+    /* 피플센터 피플시너지팀 푸터 */
     .footer-info {
       position: fixed;
       bottom: 0;
@@ -87,7 +91,7 @@
       width: 100%;
       background-color: #ffffff;
       padding: 10px 12px;
-      font-size: 10px;
+      font-size: 11px;
       color: #94a3b8;
       text-align: center;
       line-height: 1.5;
@@ -98,7 +102,7 @@
     }
     .footer-info div { white-space: nowrap; }
 
-    /* 우측 최하단 귀퉁이 플로팅 관리자 버튼 */
+    /* 우측 최하단 플로팅 관리자 진입 버튼 */
     .btn-admin-corner {
       position: fixed;
       bottom: 12px;
@@ -115,7 +119,7 @@
     }
     .btn-admin-corner:hover { opacity: 1; color: #475569; }
 
-    /* 관리자 전용 전체화면 모달 (비밀번호 성공 시 활성화) */
+    /* 관리자 전용 전체화면 모달 (비밀번호 dltmxm1 입력 시에만 호출) */
     .admin-modal {
       display: none;
       position: fixed;
@@ -153,7 +157,7 @@
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
 
-  <!-- 방문자 전용 출입 등록 폼 (타인 기록 숨김) -->
+  <!-- 방문자 전용 출입 등록 폼 (타인 기록 전면 숨김) -->
   <div class="card">
     <div>
       <h2>📋 방문자 출입 등록</h2>
@@ -163,15 +167,27 @@
     <form id="visitorForm" onsubmit="addVisitor(event)">
       <div>
         <label>성함</label>
-        <input type="text" id="name" required placeholder="홍길동" autocomplete="off">
+        <input type="text" id="name" required placeholder="성함을 입력해 주세요" autocomplete="off">
       </div>
       <div>
         <label>연락처</label>
         <input type="tel" id="phone" required placeholder="010-0000-0000" autocomplete="off">
       </div>
       <div>
-        <label>방문 목적 / 접견자</label>
-        <input type="text" id="purpose" required placeholder="미팅 / 김철수 팀장" autocomplete="off">
+        <label>방문 목적</label>
+        <!-- 복구된 방문 목적 드롭다운 -->
+        <select id="purpose" required>
+          <option value="" disabled selected>방문 목적을 선택해 주세요</option>
+          <option value="업무 미팅">업무 미팅</option>
+          <option value="면접 / 채용">면접 / 채용</option>
+          <option value="시설 방문 / 점검">시설 방문 / 점검</option>
+          <option value="납품 / 물품 전달">납품 / 물품 전달</option>
+          <option value="기타 방문">기타 방문</option>
+        </select>
+      </div>
+      <div>
+        <label>접견자 (담당자/부서)</label>
+        <input type="text" id="host" required placeholder="예: 김철수 팀장 / 피플시너지팀" autocomplete="off">
       </div>
       <button type="submit" class="btn">출입 기록 등록</button>
     </form>
@@ -182,17 +198,16 @@
     </div>
   </div>
 
-  <!-- 푸터 안내 -->
+  <!-- 푸터 문의처 수정 (by tol9u 삭제 완료) -->
   <footer class="footer-info">
-    <div>by Tol9u | 문의: dotol9u@gmail.com</div>
-    <div>Copyright © 2026 Tol9u. All rights reserved.</div>
-    <div>무단 복제·전재·배포 및 상업적 이용을 금합니다.</div>
+    <div>문의 : 피플센터 피플시너지팀</div>
+    <div>Copyright © 피플센터. All rights reserved.</div>
   </footer>
 
   <!-- 우측 최하단 귀퉁이 관리자 진입 버튼 -->
   <button class="btn-admin-corner" onclick="openAdminModal()" title="관리자">⚙️</button>
 
-  <!-- 관리자 전용 팝업 모달 (비밀번호 입력 시에만 노출) -->
+  <!-- 관리자 전용 팝업 모달 (dltmxm1 입력시에만 팝업) -->
   <div class="admin-modal" id="adminModal">
     <div class="admin-modal-content">
       <div class="admin-header">
@@ -206,9 +221,9 @@
         </div>
       </div>
 
-      <!-- 검색 필터 -->
+      <!-- 관리자 모드용 검색 필터 -->
       <div class="filter-bar">
-        <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함 또는 방문 목적 검색...">
+        <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함, 방문 목적, 접견자 검색...">
       </div>
 
       <div class="table-wrapper">
@@ -219,10 +234,10 @@
               <th>성함</th>
               <th>연락처</th>
               <th>방문 목적</th>
+              <th>접견자</th>
             </tr>
           </thead>
           <tbody id="visitorTableBody">
-            <!-- 관리자 모드 시 데이터 표시 -->
           </tbody>
         </table>
       </div>
@@ -230,7 +245,7 @@
   </div>
 
   <script>
-    // 1. 보안 설정 (우클릭, 단축키, 디버거 차단)
+    // 보안: 우클릭, 단축키, 디버거 방지
     document.addEventListener('keydown', e => {
       if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && [85, 83, 67].includes(e.keyCode))) {
         e.preventDefault(); return false;
@@ -238,11 +253,11 @@
     });
     setInterval(() => { (function(){ return Function('debugger')(); })(); }, 1000);
 
-    // 2. DB 초기화
     let db;
     let cachedList = [];
 
-    const request = indexedDB.open("VisitorLogDB_SecureOnly", 1);
+    // IndexedDB 로컬 DB 생성
+    const request = indexedDB.open("VisitorLogDB_V3", 1);
     request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains("visitors")) {
@@ -255,13 +270,14 @@
       cleanOldLogs();
     };
 
-    // 3. 방문자 출입 등록
+    // 출입 등록
     function addVisitor(e) {
       e.preventDefault();
       const visitorData = {
         name: document.getElementById('name').value,
         phone: document.getElementById('phone').value,
         purpose: document.getElementById('purpose').value,
+        host: document.getElementById('host').value,
         timestamp: Date.now(),
         dateStr: new Date().toLocaleString('ko-KR')
       };
@@ -274,7 +290,7 @@
       };
     }
 
-    // 4. 30일 경과 데이터 자동 파기
+    // 30일 경과 자동 영구 삭제
     function cleanOldLogs() {
       const tx = db.transaction("visitors", "readwrite");
       const store = tx.objectStore("visitors");
@@ -288,7 +304,7 @@
       };
     }
 
-    // 5. 관리자 인증 및 모달 열기 (비밀번호: dltmxm1)
+    // 관리자 모드 진입 (비밀번호: dltmxm1)
     function openAdminModal() {
       const password = prompt("관리자 비밀번호를 입력해 주세요:");
       if (password === "dltmxm1") {
@@ -303,7 +319,7 @@
       document.getElementById('adminModal').style.display = "none";
     }
 
-    // 6. 관리자용 테이블 불러오기 및 검색
+    // 관리자 팝업 데이터 렌더링
     function loadVisitors() {
       const tx = db.transaction("visitors", "readonly");
       const req = tx.objectStore("visitors").getAll();
@@ -324,6 +340,7 @@
           <td><b>${escapeHtml(v.name)}</b></td>
           <td>${escapeHtml(v.phone)}</td>
           <td>${escapeHtml(v.purpose)}</td>
+          <td>${escapeHtml(v.host || '-')}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -332,21 +349,23 @@
     function searchLogs() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       const filtered = cachedList.filter(v => 
-        v.name.toLowerCase().includes(query) || v.purpose.toLowerCase().includes(query)
+        v.name.toLowerCase().includes(query) || 
+        v.purpose.toLowerCase().includes(query) ||
+        (v.host && v.host.toLowerCase().includes(query))
       );
       renderTable(filtered);
     }
 
-    // 7. 엑셀(CSV) 내보내기
+    // 엑셀(CSV) 추출
     function exportToExcel() {
       if (cachedList.length === 0) {
         alert("다운로드할 방문 기록이 없습니다.");
         return;
       }
 
-      let csvContent = "\uFEFF일시,성함,연락처,방문목적\n";
+      let csvContent = "\uFEFF일시,성함,연락처,방문목적,접견자\n";
       cachedList.forEach(v => {
-        csvContent += `"${v.dateStr}","${v.name}","${v.phone}","${v.purpose}"\n`;
+        csvContent += `"${v.dateStr}","${v.name}","${v.phone}","${v.purpose}","${v.host || ''}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
