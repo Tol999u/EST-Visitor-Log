@@ -11,6 +11,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#f1f5f9">
 
+  <!-- 크롬 배지 제거용 인라인 Manifest 생성 -->
+  <link rel="manifest" id="manifestPlaceholder">
+
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     /* 우클릭, 드래그 및 선택 금지 */
@@ -33,7 +36,7 @@
       position: relative; 
     }
     
-    /* 갤럭시 탭 A8 세로모드에 맞춘 대형 카드 레이아웃 (최대 폭 680px) */
+    /* 갤럭시 탭 A8 세로모드 최적화 대형 카드 (폭 680px) */
     .card { 
       background: white; 
       border-radius: 24px; 
@@ -46,14 +49,12 @@
       gap: 22px;
     }
 
-    /* 제목 및 스펙 확대 */
     h2 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px; text-align: center; }
     .subtitle { font-size: 16px; color: #64748b; text-align: center; margin-bottom: 10px; }
 
-    /* 입력 필드 라벨 확대 */
     label { font-size: 16px; font-weight: 700; color: #334155; display: block; margin-bottom: 8px; }
     
-    /* 입력창 터치 영역 및 폰트 대폭 확대 */
+    /* 대형 터치 필드 */
     input, select { 
       width: 100%; 
       padding: 18px 20px; 
@@ -68,7 +69,7 @@
     }
     input:focus, select:focus { outline: none; border-color: #2563eb; background: white; }
     
-    /* 등록 버튼 확대 */
+    /* 대형 버튼 */
     .btn { 
       width: 100%; 
       padding: 22px; 
@@ -93,7 +94,7 @@
       text-align: center;
     }
 
-    /* 푸터 안내 */
+    /* 피플센터 단독 푸터 */
     .footer-info {
       position: fixed;
       bottom: 0;
@@ -111,7 +112,7 @@
       box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
     }
 
-    /* 우측 최하단 플로팅 관리자 진입 버튼 */
+    /* 귀퉁이 투명 관리자 버튼 */
     .btn-admin-corner {
       position: fixed;
       bottom: 14px;
@@ -128,7 +129,7 @@
     }
     .btn-admin-corner:hover { opacity: 1; color: #475569; }
 
-    /* 관리자 전용 전체화면 모달 */
+    /* 관리자 팝업 모달 */
     .admin-modal {
       display: none;
       position: fixed;
@@ -256,6 +257,27 @@
   </div>
 
   <script>
+    // 1. 순수 PWA 인라인 Manifest 자동 연결 (크롬 배지 제거용)
+    const myManifest = {
+      "name": "EST빌딩 방문자 출입대장",
+      "short_name": "방문자출입대장",
+      "start_url": "./index.html",
+      "display": "standalone",
+      "background_color": "#f1f5f9",
+      "theme_color": "#2563eb",
+      "icons": [{
+        "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }]
+    };
+    const stringManifest = JSON.stringify(myManifest);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    document.getElementById('manifestPlaceholder').setAttribute('href', manifestURL);
+
+    // 2. 보안: 개발자 도구 및 소스보기, 우클릭 차단
     document.addEventListener('keydown', e => {
       if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && [85, 83, 67].includes(e.keyCode))) {
         e.preventDefault(); return false;
@@ -263,6 +285,7 @@
     });
     setInterval(() => { (function(){ return Function('debugger')(); })(); }, 1000);
 
+    // 3. IndexedDB 로컬 암호화 데이터베이스
     let db;
     let cachedList = [];
 
@@ -279,6 +302,7 @@
       cleanOldLogs();
     };
 
+    // 출입 기록 저장
     function addVisitor(e) {
       e.preventDefault();
       const visitorData = {
@@ -299,6 +323,7 @@
       };
     }
 
+    // 30일 후 자동 영구 파기
     function cleanOldLogs() {
       const tx = db.transaction("visitors", "readwrite");
       const store = tx.objectStore("visitors");
@@ -312,6 +337,7 @@
       };
     }
 
+    // 관리자 모드 진입 (암호: dltmxm1)
     function openAdminModal() {
       const password = prompt("관리자 비밀번호를 입력해 주세요:");
       if (password === "dltmxm1") {
@@ -326,6 +352,7 @@
       document.getElementById('adminModal').style.display = "none";
     }
 
+    // 관리자 조회 및 검색
     function loadVisitors() {
       const tx = db.transaction("visitors", "readonly");
       const req = tx.objectStore("visitors").getAll();
@@ -364,6 +391,7 @@
       renderTable(filtered);
     }
 
+    // 엑셀 내보내기 (CSV)
     function exportToExcel() {
       if (cachedList.length === 0) {
         alert("다운로드할 방문 기록이 없습니다.");
