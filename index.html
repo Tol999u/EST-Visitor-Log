@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>EST빌딩 방문자 출입대장</title>
+  
+  <!-- 웹앱(PWA) 모바일 전체화면 설정 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#f1f5f9">
+
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <style>
     /* 우클릭, 드래그 및 선택 금지 */
@@ -22,36 +29,38 @@
       justify-content: center; 
       align-items: center; 
       min-height: 100vh; 
-      padding: 20px 20px 80px 20px; 
+      padding: 30px 24px 90px 24px; 
       position: relative; 
     }
     
-    /* 태블릿 화면 단일 카드 레이아웃 */
+    /* 갤럭시 탭 A8 세로모드에 맞춘 대형 카드 레이아웃 (최대 폭 680px) */
     .card { 
       background: white; 
-      border-radius: 20px; 
-      padding: 32px; 
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); 
+      border-radius: 24px; 
+      padding: 44px 38px; 
+      box-shadow: 0 12px 30px -5px rgba(0,0,0,0.08); 
       width: 100%;
-      max-width: 480px;
+      max-width: 680px; 
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 22px;
     }
 
-    h2 { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-align: center; }
-    .subtitle { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 8px; }
+    /* 제목 및 스펙 확대 */
+    h2 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px; text-align: center; }
+    .subtitle { font-size: 16px; color: #64748b; text-align: center; margin-bottom: 10px; }
 
-    label { font-size: 13px; font-weight: 700; color: #334155; display: block; margin-bottom: 4px; }
+    /* 입력 필드 라벨 확대 */
+    label { font-size: 16px; font-weight: 700; color: #334155; display: block; margin-bottom: 8px; }
     
-    /* 입력 필드 및 드롭다운 스타일 */
+    /* 입력창 터치 영역 및 폰트 대폭 확대 */
     input, select { 
       width: 100%; 
-      padding: 12px 14px; 
-      border: 1px solid #cbd5e1; 
-      border-radius: 10px; 
-      font-size: 15px; 
-      margin-bottom: 12px; 
+      padding: 18px 20px; 
+      border: 1.5px solid #cbd5e1; 
+      border-radius: 12px; 
+      font-size: 18px; 
+      margin-bottom: 16px; 
       background: #f8fafc;
       color: #0f172a;
       -webkit-user-select: auto; 
@@ -59,39 +68,40 @@
     }
     input:focus, select:focus { outline: none; border-color: #2563eb; background: white; }
     
+    /* 등록 버튼 확대 */
     .btn { 
       width: 100%; 
-      padding: 16px; 
+      padding: 22px; 
       background: #2563eb; 
       color: white; 
       border: none; 
-      border-radius: 10px; 
-      font-size: 16px; 
+      border-radius: 14px; 
+      font-size: 20px; 
       font-weight: 700; 
       cursor: pointer; 
-      margin-top: 4px;
+      margin-top: 8px;
     }
     .btn:active { background: #1d4ed8; transform: scale(0.99); }
 
     .notice { 
-      font-size: 11px; 
+      font-size: 13px; 
       color: #ef4444; 
       background: #fef2f2; 
-      padding: 12px; 
-      border-radius: 8px; 
-      line-height: 1.5; 
+      padding: 16px; 
+      border-radius: 10px; 
+      line-height: 1.6; 
       text-align: center;
     }
 
-    /* 피플센터 피플시너지팀 단독 푸터 */
+    /* 푸터 안내 */
     .footer-info {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
       background-color: #ffffff;
-      padding: 12px;
-      font-size: 11px;
+      padding: 14px;
+      font-size: 13px;
       color: #64748b;
       font-weight: 600;
       text-align: center;
@@ -104,14 +114,14 @@
     /* 우측 최하단 플로팅 관리자 진입 버튼 */
     .btn-admin-corner {
       position: fixed;
-      bottom: 12px;
-      right: 12px;
+      bottom: 14px;
+      right: 14px;
       background: transparent;
       color: #cbd5e1;
       border: none;
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
-      padding: 6px;
+      padding: 8px;
       opacity: 0.5;
       z-index: 1001;
       transition: opacity 0.2s;
@@ -133,25 +143,25 @@
     .admin-modal-content {
       background: white;
       width: 100%;
-      max-width: 800px;
-      height: 80vh;
+      max-width: 850px;
+      height: 85vh;
       border-radius: 20px;
-      padding: 24px;
+      padding: 28px;
       display: flex;
       flex-direction: column;
       gap: 16px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
     }
     .admin-header { display: flex; justify-content: space-between; align-items: center; }
-    .filter-bar input { margin-bottom: 0; padding: 10px 14px; font-size: 13px; }
+    .filter-bar input { margin-bottom: 0; padding: 12px 16px; font-size: 15px; }
     
-    .btn-excel { padding: 10px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
-    .btn-close { padding: 10px 16px; background: #64748b; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-excel { padding: 12px 18px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-close { padding: 12px 18px; background: #64748b; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
 
     .table-wrapper { flex: 1; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-    th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 700; position: sticky; top: 0; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+    th { background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 700; position: sticky; top: 0; }
   </style>
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
@@ -200,7 +210,7 @@
     </div>
   </div>
 
-  <!-- 푸터 문의처 (아랫줄 삭제 반영) -->
+  <!-- 푸터 문의처 -->
   <footer class="footer-info">
     <div>문의 : 피플센터 피플시너지팀</div>
   </footer>
@@ -222,7 +232,6 @@
         </div>
       </div>
 
-      <!-- 관리자 모드용 검색 필터 -->
       <div class="filter-bar">
         <input type="text" id="searchInput" onkeyup="searchLogs()" placeholder="성함, 소속, 방문 목적, 접견자 검색...">
       </div>
@@ -247,7 +256,6 @@
   </div>
 
   <script>
-    // 보안: 우클릭, 단축키, 디버거 방지
     document.addEventListener('keydown', e => {
       if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && [85, 83, 67].includes(e.keyCode))) {
         e.preventDefault(); return false;
@@ -258,7 +266,6 @@
     let db;
     let cachedList = [];
 
-    // IndexedDB 로컬 DB 생성
     const request = indexedDB.open("EST_VisitorLogDB_V4", 1);
     request.onupgradeneeded = e => {
       db = e.target.result;
@@ -272,7 +279,6 @@
       cleanOldLogs();
     };
 
-    // 출입 등록
     function addVisitor(e) {
       e.preventDefault();
       const visitorData = {
@@ -293,7 +299,6 @@
       };
     }
 
-    // 30일 경과 자동 영구 삭제
     function cleanOldLogs() {
       const tx = db.transaction("visitors", "readwrite");
       const store = tx.objectStore("visitors");
@@ -307,7 +312,6 @@
       };
     }
 
-    // 관리자 모드 진입 (비밀번호: dltmxm1)
     function openAdminModal() {
       const password = prompt("관리자 비밀번호를 입력해 주세요:");
       if (password === "dltmxm1") {
@@ -322,7 +326,6 @@
       document.getElementById('adminModal').style.display = "none";
     }
 
-    // 관리자 팝업 데이터 렌더링
     function loadVisitors() {
       const tx = db.transaction("visitors", "readonly");
       const req = tx.objectStore("visitors").getAll();
@@ -361,7 +364,6 @@
       renderTable(filtered);
     }
 
-    // 엑셀(CSV) 추출
     function exportToExcel() {
       if (cachedList.length === 0) {
         alert("다운로드할 방문 기록이 없습니다.");
